@@ -43,3 +43,6 @@ next-env.d.ts
 # AI
 .claude
 
+# Generated API code
+src/lib/generated/
+
