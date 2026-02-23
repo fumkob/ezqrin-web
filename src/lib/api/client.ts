@@ -2,6 +2,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '/api/v1';
 
 let accessToken: string | null = null;
 let refreshToken: string | null = null;
+let refreshPromise: Promise<string | null> | null = null;
+let onUnauthorizedCallback: (() => void) | null = null;
 
 export function setTokens(access: string, refresh: string) {
   accessToken = access;
@@ -26,24 +28,39 @@ export function getStoredRefreshToken(): string | null {
   return null;
 }
 
-async function refreshAccessToken(): Promise<string | null> {
-  const rt = refreshToken ?? getStoredRefreshToken();
-  if (!rt) return null;
+export function setOnUnauthorized(cb: () => void) {
+  onUnauthorizedCallback = cb;
+}
 
-  const res = await fetch(`${BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh_token: rt }),
-  });
+export async function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
 
-  if (!res.ok) {
-    clearTokens();
-    return null;
-  }
+  refreshPromise = (async () => {
+    try {
+      const rt = refreshToken ?? getStoredRefreshToken();
+      if (!rt) return null;
 
-  const data = await res.json();
-  setTokens(data.access_token, data.refresh_token);
-  return data.access_token;
+      const res = await fetch(`${BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: rt }),
+      });
+
+      if (!res.ok) {
+        clearTokens();
+        onUnauthorizedCallback?.();
+        return null;
+      }
+
+      const data = await res.json();
+      setTokens(data.access_token, data.refresh_token);
+      return data.access_token;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 }
 
 export async function apiFetch<T>(
