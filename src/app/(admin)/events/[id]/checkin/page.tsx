@@ -22,19 +22,25 @@ export default function CheckinPage() {
   const { data: checkins, isLoading } = useCheckins(id);
   const { mutateAsync: performCheckin, isPending } = usePerformCheckin(id);
 
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
   async function handleCheckin(e: React.FormEvent) {
     e.preventDefault();
-    if (!participantId.trim()) return;
+    const input = participantId.trim();
+    if (!input) return;
+
+    const isUUID = UUID_REGEX.test(input);
+    const checkinData = isUUID
+      ? { participant_id: input, method: 'manual' as const }
+      : { qr_code: input, method: 'qrcode' as const };
+
     try {
-      const result = await performCheckin({
-        participant_id: participantId.trim(),
-        method: 'manual',
-      });
+      const result = await performCheckin(checkinData);
       toast.success(`${result.participant.name} さんのチェックインが完了しました`);
       setParticipantId('');
     } catch (err: unknown) {
       const apiErr = err as { code?: string };
-      if (apiErr.code === 'CHECKIN_ALREADY_CHECKED_IN') {
+      if (apiErr.code === 'CONFLICT') {
         toast.error('この参加者はすでにチェックイン済みです');
       } else {
         toast.error('チェックインに失敗しました');
