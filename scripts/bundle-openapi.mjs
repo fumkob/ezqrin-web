@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Bundle the OpenAPI spec into a single file for orval
 import SwaggerParser from '@apidevtools/swagger-parser';
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
