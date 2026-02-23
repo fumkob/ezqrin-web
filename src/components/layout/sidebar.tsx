@@ -2,14 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Calendar, LogOut } from 'lucide-react';
+import { LayoutDashboard, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
-  { href: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
-  { href: '/events', label: 'イベント', icon: Calendar },
+  { href: '/dashboard', label: 'イベント管理', icon: LayoutDashboard },
 ];
 
 export function Sidebar() {
@@ -35,7 +34,7 @@ export function Sidebar() {
             href={href}
             className={cn(
               'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
-              pathname.startsWith(href)
+              pathname === href || pathname.startsWith('/events')
                 ? 'bg-slate-700 text-white'
                 : 'text-slate-400 hover:bg-slate-800 hover:text-white',
             )}
