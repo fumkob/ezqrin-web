@@ -85,7 +85,7 @@ export default function CheckinPage() {
           <p className="text-muted-foreground">読み込み中...</p>
         ) : (
           <div className="space-y-2">
-            {checkins?.data.map((ci) => (
+            {checkins?.data?.map((ci) => (
               <div
                 key={ci.id}
                 className="flex items-center justify-between p-3 bg-white rounded-md border"
@@ -104,7 +104,7 @@ export default function CheckinPage() {
                 </div>
               </div>
             ))}
-            {checkins?.data.length === 0 && (
+            {(checkins?.data?.length ?? 0) === 0 && (
               <p className="text-muted-foreground">まだチェックインがありません</p>
             )}
           </div>
