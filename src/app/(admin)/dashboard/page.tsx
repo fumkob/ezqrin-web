@@ -17,10 +17,10 @@ import { Plus, Search } from 'lucide-react';
 
 export default function DashboardPage() {
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('all');
   const { data, isLoading } = useEvents({
     search: search || undefined,
-    status: status || undefined,
+    status: status === 'all' ? undefined : status,
   });
 
   return (
@@ -45,12 +45,12 @@ export default function DashboardPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select value={status} onValueChange={setStatus}>
+        <Select value={status} onValueChange={(v) => setStatus(v)}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="ステータス" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">すべて</SelectItem>
+            <SelectItem value="all">すべて</SelectItem>
             <SelectItem value="draft">下書き</SelectItem>
             <SelectItem value="published">公開中</SelectItem>
             <SelectItem value="ongoing">開催中</SelectItem>
