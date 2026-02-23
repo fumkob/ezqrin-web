@@ -101,6 +101,7 @@ export function EventForm({ defaultValues, onSubmit, isLoading }: EventFormProps
             id="start_date"
             value={watch('start_date') || undefined}
             onChange={(v) => setValue('start_date', v, { shouldValidate: true })}
+            maxDate={watch('end_date') ? new Date(watch('end_date')!) : undefined}
           />
           {errors.start_date && (
             <p className="text-sm text-destructive">{errors.start_date.message as string}</p>
@@ -112,6 +113,7 @@ export function EventForm({ defaultValues, onSubmit, isLoading }: EventFormProps
             id="end_date"
             value={watch('end_date') || undefined}
             onChange={(v) => setValue('end_date', v, { shouldValidate: true })}
+            minDate={watch('start_date') ? new Date(watch('start_date')) : undefined}
           />
         </div>
       </div>
