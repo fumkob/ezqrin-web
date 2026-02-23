@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { format } from 'date-fns';
 import { de, enGB, enUS, fr, it, ja, ko, zhCN } from 'date-fns/locale';
 import type { Locale } from 'date-fns';
@@ -37,39 +37,30 @@ interface DateTimePickerProps {
 
 export function DateTimePicker({ id, value, onChange, placeholder }: DateTimePickerProps) {
   const [open, setOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    value ? new Date(value) : undefined,
+
+  // value から直接導出（内部 state 不要）
+  const selectedDate = value ? new Date(value) : undefined;
+  const time = value ? value.slice(11, 16) : '00:00';
+
+  // SSR-safe な navigator.language 取得
+  const lang = useSyncExternalStore(
+    () => () => {},
+    () => navigator.language,
+    () => 'en-US',
   );
-  const [time, setTime] = useState<string>(value ? value.slice(11, 16) : '00:00');
-  const [localeInfo, setLocaleInfo] = useState<LocaleInfo>(() => getLocaleInfo('en-US'));
-
-  useEffect(() => {
-    setLocaleInfo(getLocaleInfo(navigator.language));
-  }, []);
-
-  useEffect(() => {
-    if (value) {
-      setSelectedDate(new Date(value));
-      setTime(value.slice(11, 16));
-    } else {
-      setSelectedDate(undefined);
-      setTime('00:00');
-    }
-  }, [value]);
+  const localeInfo = useMemo(() => getLocaleInfo(lang), [lang]);
 
   function buildIso(date: Date, hhmm: string): string {
     return `${format(date, 'yyyy-MM-dd')}T${hhmm}`;
   }
 
   function handleDateSelect(date: Date | undefined) {
-    setSelectedDate(date);
     if (date) {
       onChange(buildIso(date, time));
     }
   }
 
   function handleTimeChange(newTime: string) {
-    setTime(newTime);
     if (selectedDate) {
       onChange(buildIso(selectedDate, newTime));
     }
@@ -111,7 +102,8 @@ export function DateTimePicker({ id, value, onChange, placeholder }: DateTimePic
             type="time"
             value={time}
             onChange={(e) => handleTimeChange(e.target.value)}
-            className="w-full rounded border px-2 py-1 text-sm"
+            disabled={!selectedDate}
+            className="w-full rounded border px-2 py-1 text-sm disabled:opacity-50"
           />
         </div>
       </PopoverContent>
