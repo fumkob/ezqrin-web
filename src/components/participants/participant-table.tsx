@@ -11,7 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Trash2, CheckCircle } from 'lucide-react';
-import type { Participant } from '@/types/api';
+import type { Participant } from '@/lib/generated/model';
 
 const statusLabels: Record<string, string> = {
   tentative: '仮参加',

@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { CreateEventRequest, Event } from '@/types/api';
+import type { CreateEventRequest, Event } from '@/lib/generated/model';
 
 const schema = z.object({
   name: z.string().min(1, '必須').max(255),

@@ -5,7 +5,7 @@ import {
 } from '@/lib/generated/checkin/checkin';
 import { eventKeys } from './use-events';
 import { participantKeys } from './use-participants';
-import type { CheckInRequest } from '@/lib/generated/model';
+import type { CheckInRequest, CheckInListResponse, CheckInResponse } from '@/lib/generated/model';
 
 export const checkinKeys = {
   list: (eventId: string) => ['checkins', eventId] as const,
@@ -13,7 +13,10 @@ export const checkinKeys = {
 
 export function useCheckins(eventId: string) {
   return useListCheckIns(eventId, { per_page: 50 }, {
-    query: { refetchInterval: 15_000 },
+    query: {
+      refetchInterval: 15_000,
+      select: (res) => res as unknown as CheckInListResponse,
+    },
   });
 }
 
@@ -30,6 +33,7 @@ export function usePerformCheckin(eventId: string) {
   });
   return {
     ...mutation,
-    mutateAsync: (data: CheckInRequest) => mutation.mutateAsync({ id: eventId, data }),
+    mutateAsync: (data: CheckInRequest) =>
+      mutation.mutateAsync({ id: eventId, data }).then((res) => res as unknown as CheckInResponse),
   };
 }

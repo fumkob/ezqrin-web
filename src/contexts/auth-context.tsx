@@ -8,7 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from 'react';
-import type { User } from '@/types/api';
+import type { User } from '@/lib/generated/model';
 import { login as apiLogin, logout as apiLogout } from '@/lib/api/auth';
 import { setTokens, getStoredRefreshToken } from '@/lib/api/client';
 
@@ -41,10 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    const rt = getStoredRefreshToken();
-    if (rt) {
-      await apiLogout(rt).catch(() => {});
-    }
+    await apiLogout().catch(() => {});
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('refresh_token');

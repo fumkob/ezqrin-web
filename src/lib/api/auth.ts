@@ -4,9 +4,10 @@ import type { AuthResponse } from '@/lib/generated/model';
 import type { LoginRequest } from '@/lib/generated/model';
 
 export async function login(req: LoginRequest): Promise<AuthResponse> {
-  const data = await loginUser(req);
+  const resp = await loginUser(req);
+  const data = resp as unknown as AuthResponse;
   setTokens(data.access_token, data.refresh_token);
-  return data as AuthResponse;
+  return data;
 }
 
 export async function logout(): Promise<void> {

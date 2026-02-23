@@ -16,7 +16,7 @@ import { ParticipantTable } from '@/components/participants/participant-table';
 import { AddParticipantDialog } from '@/components/participants/add-participant-dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import type { CreateParticipantRequest } from '@/types/api';
+import type { CreateParticipantRequest, Participant } from '@/lib/generated/model';
 
 export default function ParticipantsPage() {
   const { id } = useParams<{ id: string }>();
@@ -102,7 +102,7 @@ export default function ParticipantsPage() {
         <div className="text-muted-foreground">読み込み中...</div>
       ) : (
         <>
-          <ParticipantTable participants={data?.data ?? []} onDelete={handleDelete} />
+          <ParticipantTable participants={(data?.data as Participant[] | undefined) ?? []} onDelete={handleDelete} />
           <p className="text-sm text-muted-foreground">全 {data?.meta.total ?? 0} 名</p>
         </>
       )}

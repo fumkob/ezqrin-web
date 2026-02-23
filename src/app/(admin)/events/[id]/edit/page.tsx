@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useEvent, useUpdateEvent } from '@/hooks/use-events';
 import { EventForm } from '@/components/events/event-form';
-import type { CreateEventRequest } from '@/types/api';
+import type { CreateEventRequest } from '@/lib/generated/model';
 
 export default function EditEventPage() {
   const { id } = useParams<{ id: string }>();

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { EventForm } from '@/components/events/event-form';
 import { useCreateEvent } from '@/hooks/use-events';
 import { toast } from 'sonner';
-import type { CreateEventRequest } from '@/types/api';
+import type { CreateEventRequest } from '@/lib/generated/model';
 
 export default function NewEventPage() {
   const router = useRouter();

@@ -4,7 +4,7 @@ import { ja } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Users } from 'lucide-react';
-import type { Event } from '@/types/api';
+import type { Event } from '@/lib/generated/model';
 
 const statusConfig: Record<
   string,

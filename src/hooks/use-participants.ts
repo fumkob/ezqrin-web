@@ -6,7 +6,7 @@ import {
   useDeleteParticipant as useDeleteParticipantGenerated,
 } from '@/lib/generated/participants/participants';
 import { apiFetch } from '@/lib/api/client';
-import type { CreateParticipantRequest, UpdateParticipantRequest, ListParticipantsParams } from '@/lib/generated/model';
+import type { CreateParticipantRequest, UpdateParticipantRequest, ListParticipantsParams, ParticipantListResponse } from '@/lib/generated/model';
 
 export const participantKeys = {
   all: (eventId: string) => ['participants', eventId] as const,
@@ -15,7 +15,9 @@ export const participantKeys = {
 };
 
 export function useParticipants(eventId: string, params?: ListParticipantsParams) {
-  return useListParticipants(eventId, params);
+  return useListParticipants(eventId, params, {
+    query: { select: (res) => res as unknown as ParticipantListResponse },
+  });
 }
 
 export function useAddParticipant(eventId: string) {

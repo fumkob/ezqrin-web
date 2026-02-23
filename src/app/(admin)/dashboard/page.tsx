@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useEvents } from '@/hooks/use-events';
 import { EventCard } from '@/components/events/event-card';
+import type { Event, EventStatus } from '@/lib/generated/model';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -19,8 +20,8 @@ export default function DashboardPage() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const { data, isLoading } = useEvents({
-    search: search || undefined,
-    status: status === 'all' ? undefined : status,
+    name: search || undefined,
+    status: status === 'all' ? undefined : (status as EventStatus),
   });
 
   return (
@@ -64,10 +65,10 @@ export default function DashboardPage() {
         <div className="text-muted-foreground">読み込み中...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data?.data.map((event) => (
+          {(data?.data as Event[] | undefined)?.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
-          {data?.data.length === 0 && (
+          {((data?.data as Event[] | undefined)?.length ?? 0) === 0 && (
             <p className="text-muted-foreground col-span-full text-center py-12">
               イベントが見つかりません
             </p>

@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
-import type { CreateParticipantRequest } from '@/types/api';
+import type { CreateParticipantRequest } from '@/lib/generated/model';
 
 const schema = z.object({
   name: z.string().min(1, '必須'),
