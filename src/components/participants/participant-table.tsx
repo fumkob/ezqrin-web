@@ -31,6 +31,7 @@ export function ParticipantTable({ participants, onDelete }: ParticipantTablePro
       <TableHeader>
         <TableRow>
           <TableHead>名前</TableHead>
+          <TableHead>社員ID</TableHead>
           <TableHead>メールアドレス</TableHead>
           <TableHead>ステータス</TableHead>
           <TableHead>チェックイン</TableHead>
@@ -41,6 +42,7 @@ export function ParticipantTable({ participants, onDelete }: ParticipantTablePro
         {participants.map((p) => (
           <TableRow key={p.id}>
             <TableCell className="font-medium">{p.name}</TableCell>
+            <TableCell className="text-muted-foreground">{p.employee_id ?? '-'}</TableCell>
             <TableCell className="text-muted-foreground">{p.email}</TableCell>
             <TableCell>
               <Badge variant="secondary">{statusLabels[p.status] ?? p.status}</Badge>

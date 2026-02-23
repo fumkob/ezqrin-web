@@ -20,6 +20,7 @@ import type { CreateParticipantRequest } from '@/types/api';
 const schema = z.object({
   name: z.string().min(1, '必須'),
   email: z.string().email('有効なメールアドレスを入力してください'),
+  employee_id: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -76,6 +77,10 @@ export function AddParticipantDialog({ onAdd }: AddParticipantDialogProps) {
             {errors.email && (
               <p className="text-sm text-destructive">{errors.email.message}</p>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label>社員ID</Label>
+            <Input {...register('employee_id')} />
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" type="button" onClick={() => setOpen(false)}>
