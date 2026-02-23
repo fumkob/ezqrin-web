@@ -16,6 +16,7 @@ export default function EditEventPage() {
     try {
       await mutateAsync(data);
       toast.success('イベントを更新しました');
+      router.refresh();
       router.push(`/events/${id}`);
     } catch {
       toast.error('更新に失敗しました');

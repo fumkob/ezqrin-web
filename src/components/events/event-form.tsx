@@ -59,9 +59,27 @@ export function EventForm({ defaultValues, onSubmit, isLoading }: EventFormProps
     toast.error('入力内容を確認してください');
   }
 
+  function toRFC3339(datetimeLocal: string, timezone: string): string {
+    const date = new Date(datetimeLocal);
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      timeZoneName: 'longOffset',
+    });
+    const offsetPart = formatter.formatToParts(date).find((p) => p.type === 'timeZoneName');
+    const offset = offsetPart ? offsetPart.value.replace('GMT', '') : '+00:00';
+    return `${datetimeLocal}:00${offset}`;
+  }
+
   return (
     <form
-      onSubmit={handleSubmit((data) => onSubmit(data as CreateEventRequest), onInvalid)}
+      onSubmit={handleSubmit((data) => {
+        const converted: CreateEventRequest = {
+          ...data,
+          start_date: toRFC3339(data.start_date, data.timezone),
+          end_date: data.end_date ? toRFC3339(data.end_date, data.timezone) : undefined,
+        } as CreateEventRequest;
+        return onSubmit(converted);
+      }, onInvalid)}
       className="space-y-4 max-w-lg"
     >
       <div className="space-y-2">
