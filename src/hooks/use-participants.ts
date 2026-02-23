@@ -1,12 +1,12 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import {
-  listParticipants,
-  addParticipant,
-  updateParticipant,
-  deleteParticipant,
-  importParticipantsCSV,
-} from '@/lib/api/participants';
-import type { CreateParticipantRequest } from '@/types/api';
+  useListParticipants,
+  useCreateParticipant,
+  useUpdateParticipant as useUpdateParticipantGenerated,
+  useDeleteParticipant as useDeleteParticipantGenerated,
+} from '@/lib/generated/participants/participants';
+import { apiFetch } from '@/lib/api/client';
+import type { CreateParticipantRequest, UpdateParticipantRequest, ListParticipantsParams } from '@/lib/generated/model';
 
 export const participantKeys = {
   all: (eventId: string) => ['participants', eventId] as const,
@@ -14,45 +14,61 @@ export const participantKeys = {
     [...participantKeys.all(eventId), params] as const,
 };
 
-export function useParticipants(
-  eventId: string,
-  params?: { page?: number; status?: string; search?: string; checked_in?: boolean },
-) {
-  return useQuery({
-    queryKey: participantKeys.list(eventId, params),
-    queryFn: () => listParticipants(eventId, params),
-  });
+export function useParticipants(eventId: string, params?: ListParticipantsParams) {
+  return useListParticipants(eventId, params);
 }
 
 export function useAddParticipant(eventId: string) {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (req: CreateParticipantRequest) => addParticipant(eventId, req),
-    onSuccess: () => qc.invalidateQueries({ queryKey: participantKeys.all(eventId) }),
+  const mutation = useCreateParticipant({
+    mutation: {
+      onSuccess: () => qc.invalidateQueries({ queryKey: participantKeys.all(eventId) }),
+    },
   });
+  return {
+    ...mutation,
+    mutateAsync: (data: CreateParticipantRequest) => mutation.mutateAsync({ id: eventId, data }),
+  };
 }
 
 export function useUpdateParticipant(eventId: string) {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, req }: { id: string; req: Partial<CreateParticipantRequest> }) =>
-      updateParticipant(eventId, id, req),
-    onSuccess: () => qc.invalidateQueries({ queryKey: participantKeys.all(eventId) }),
+  const mutation = useUpdateParticipantGenerated({
+    mutation: {
+      onSuccess: () => qc.invalidateQueries({ queryKey: participantKeys.all(eventId) }),
+    },
   });
+  return {
+    ...mutation,
+    mutateAsync: ({ id, data }: { id: string; data: UpdateParticipantRequest }) =>
+      mutation.mutateAsync({ id, data }),
+  };
 }
 
 export function useDeleteParticipant(eventId: string) {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (participantId: string) => deleteParticipant(eventId, participantId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: participantKeys.all(eventId) }),
+  const mutation = useDeleteParticipantGenerated({
+    mutation: {
+      onSuccess: () => qc.invalidateQueries({ queryKey: participantKeys.all(eventId) }),
+    },
   });
+  return {
+    ...mutation,
+    mutateAsync: (id: string) => mutation.mutateAsync({ id }),
+  };
 }
 
 export function useImportParticipants(eventId: string) {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (file: File) => importParticipantsCSV(eventId, file),
-    onSuccess: () => qc.invalidateQueries({ queryKey: participantKeys.all(eventId) }),
-  });
+  const mutateAsync = async (file: File, skipDuplicates = true) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const result = await apiFetch<{ imported_count: number; skipped_count: number; failed_count: number }>(
+      `/events/${eventId}/participants/import?skip_duplicates=${skipDuplicates}`,
+      { method: 'POST', body: formData },
+    );
+    await qc.invalidateQueries({ queryKey: participantKeys.all(eventId) });
+    return result;
+  };
+  return { mutateAsync };
 }
