@@ -2,7 +2,7 @@ import { defineConfig } from 'orval';
 
 export default defineConfig({
   ezqrin: {
-    input: './server/api/openapi.yaml',
+    input: './server/api/openapi.bundled.json',
     output: {
       mode: 'tags-split',
       target: './src/lib/generated',
