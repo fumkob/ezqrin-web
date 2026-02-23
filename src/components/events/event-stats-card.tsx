@@ -1,8 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { EventStats } from '@/types/api';
+import type { EventStatsResponse } from '@/lib/generated/model';
 import { Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
 
-export function EventStatsCard({ stats }: { stats: EventStats }) {
+export function EventStatsCard({ stats }: { stats: EventStatsResponse }) {
+  const pendingCount =
+    (stats.total_participants ?? 0) - (stats.checked_in_participants ?? 0);
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <Card>
@@ -22,7 +25,7 @@ export function EventStatsCard({ stats }: { stats: EventStats }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{stats.checked_in_count ?? 0}</p>
+          <p className="text-2xl font-bold">{stats.checked_in_participants ?? 0}</p>
         </CardContent>
       </Card>
       <Card>
@@ -32,7 +35,7 @@ export function EventStatsCard({ stats }: { stats: EventStats }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{stats.pending_count ?? 0}</p>
+          <p className="text-2xl font-bold">{pendingCount}</p>
         </CardContent>
       </Card>
       <Card>
@@ -42,7 +45,9 @@ export function EventStatsCard({ stats }: { stats: EventStats }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{(stats.check_in_rate ?? 0).toFixed(1)}%</p>
+          <p className="text-2xl font-bold">
+            {((stats.checkin_rate ?? 0) * 100).toFixed(1)}%
+          </p>
         </CardContent>
       </Card>
     </div>
