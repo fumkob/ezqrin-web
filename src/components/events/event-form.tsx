@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -54,9 +55,13 @@ export function EventForm({ defaultValues, onSubmit, isLoading }: EventFormProps
     },
   });
 
+  function onInvalid() {
+    toast.error('入力内容を確認してください');
+  }
+
   return (
     <form
-      onSubmit={handleSubmit((data) => onSubmit(data as CreateEventRequest))}
+      onSubmit={handleSubmit((data) => onSubmit(data as CreateEventRequest), onInvalid)}
       className="space-y-4 max-w-lg"
     >
       <div className="space-y-2">
@@ -91,9 +96,10 @@ export function EventForm({ defaultValues, onSubmit, isLoading }: EventFormProps
 
       <div className="space-y-2">
         <Label>ステータス</Label>
+        <input type="hidden" {...register('status')} />
         <Select
-          defaultValue={watch('status') as string}
-          onValueChange={(v) => setValue('status', v as FormData['status'])}
+          value={watch('status')}
+          onValueChange={(v) => setValue('status', v as FormData['status'], { shouldValidate: true })}
         >
           <SelectTrigger>
             <SelectValue />
@@ -107,6 +113,8 @@ export function EventForm({ defaultValues, onSubmit, isLoading }: EventFormProps
           </SelectContent>
         </Select>
       </div>
+
+      <input type="hidden" {...register('timezone')} />
 
       <Button type="submit" disabled={isLoading}>
         {isLoading ? '保存中...' : '保存'}
