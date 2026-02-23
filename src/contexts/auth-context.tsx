@@ -11,7 +11,7 @@ import {
 } from 'react';
 import type { User } from '@/lib/generated/model';
 import { login as apiLogin, logout as apiLogout } from '@/lib/api/auth';
-import { getStoredRefreshToken } from '@/lib/api/client';
+import { getStoredRefreshToken, refreshAccessToken, setOnUnauthorized } from '@/lib/api/client';
 
 interface AuthContextType {
   user: User | null;
@@ -29,12 +29,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const rt = getStoredRefreshToken();
-    startTransition(() => {
-      if (storedUser && rt) {
-        setUser(JSON.parse(storedUser));
-      }
-      setIsLoading(false);
+
+    setOnUnauthorized(() => {
+      startTransition(() => {
+        setUser(null);
+        localStorage.removeItem('user');
+      });
     });
+
+    if (storedUser && rt) {
+      refreshAccessToken().then((newToken) => {
+        startTransition(() => {
+          if (newToken) {
+            setUser(JSON.parse(storedUser));
+          } else {
+            localStorage.removeItem('user');
+          }
+          setIsLoading(false);
+        });
+      });
+    } else {
+      startTransition(() => setIsLoading(false));
+    }
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
