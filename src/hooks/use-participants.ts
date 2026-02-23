@@ -9,7 +9,7 @@ import { apiFetch } from '@/lib/api/client';
 import type { CreateParticipantRequest, UpdateParticipantRequest, ListParticipantsParams, ParticipantListResponse } from '@/lib/generated/model';
 
 export const participantKeys = {
-  all: (eventId: string) => ['participants', eventId] as const,
+  all: (eventId: string) => [`/events/${eventId}/participants`] as const,
   list: (eventId: string, params?: object) =>
     [...participantKeys.all(eventId), params] as const,
 };

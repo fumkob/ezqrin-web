@@ -17,10 +17,10 @@ import type {
 } from '@/lib/generated/model';
 
 export const eventKeys = {
-  all: ['events'] as const,
-  list: (params?: object) => [...eventKeys.all, 'list', params] as const,
-  detail: (id: string) => [...eventKeys.all, 'detail', id] as const,
-  stats: (id: string) => [...eventKeys.all, 'stats', id] as const,
+  all: ['/events'] as const,
+  list: (params?: object) => [...eventKeys.all, ...(params ? [params] : [])] as const,
+  detail: (id: string) => [`/events/${id}`] as const,
+  stats: (id: string) => [`/events/${id}/stats`] as const,
 };
 
 export function useEvents(params?: GetEventsParams) {

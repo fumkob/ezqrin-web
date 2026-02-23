@@ -8,7 +8,7 @@ import { participantKeys } from './use-participants';
 import type { CheckInRequest, CheckInListResponse, CheckInResponse } from '@/lib/generated/model';
 
 export const checkinKeys = {
-  list: (eventId: string) => ['checkins', eventId] as const,
+  list: (eventId: string) => [`/events/${eventId}/checkins`] as const,
 };
 
 export function useCheckins(eventId: string) {
