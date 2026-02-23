@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 import type { CreateEventRequest, Event } from '@/lib/generated/model';
 
 const schema = z.object({
@@ -96,14 +97,22 @@ export function EventForm({ defaultValues, onSubmit, isLoading }: EventFormProps
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="start_date">開始日時 *</Label>
-          <Input id="start_date" type="datetime-local" {...register('start_date')} />
+          <DateTimePicker
+            id="start_date"
+            value={watch('start_date') || undefined}
+            onChange={(v) => setValue('start_date', v, { shouldValidate: true })}
+          />
           {errors.start_date && (
             <p className="text-sm text-destructive">{errors.start_date.message as string}</p>
           )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="end_date">終了日時</Label>
-          <Input id="end_date" type="datetime-local" {...register('end_date')} />
+          <DateTimePicker
+            id="end_date"
+            value={watch('end_date') || undefined}
+            onChange={(v) => setValue('end_date', v, { shouldValidate: true })}
+          />
         </div>
       </div>
 
