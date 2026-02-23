@@ -14,30 +14,33 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+type CheckinTab = 'employee_id' | 'qrcode' | 'participant_id';
 
 export default function CheckinPage() {
   const { id } = useParams<{ id: string }>();
-  const [participantId, setParticipantId] = useState('');
+  const [input, setInput] = useState('');
   const { data: event } = useEvent(id);
   const { data: checkins, isLoading } = useCheckins(id);
   const { mutateAsync: performCheckin, isPending } = usePerformCheckin(id);
 
-  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-  async function handleCheckin(e: React.FormEvent) {
+  async function handleCheckin(e: React.FormEvent, tab: CheckinTab) {
     e.preventDefault();
-    const input = participantId.trim();
-    if (!input) return;
+    const value = input.trim();
+    if (!value) return;
 
-    const isUUID = UUID_REGEX.test(input);
-    const checkinData = isUUID
-      ? { participant_id: input, method: 'manual' as const }
-      : { qr_code: input, method: 'qrcode' as const };
+    const checkinData =
+      tab === 'qrcode'
+        ? { qr_code: value, method: 'qrcode' as const }
+        : tab === 'participant_id'
+          ? { participant_id: value, method: 'manual' as const }
+          : { employee_id: value, method: 'manual' as const };
 
     try {
       const result = await performCheckin(checkinData);
       toast.success(`${result.participant.name} さんのチェックインが完了しました`);
-      setParticipantId('');
+      setInput('');
     } catch (err: unknown) {
       const apiErr = err as { code?: string };
       if (apiErr.code === 'CONFLICT') {
@@ -61,27 +64,67 @@ export default function CheckinPage() {
 
       <Card className="max-w-md">
         <CardHeader>
-          <CardTitle>手動チェックイン</CardTitle>
+          <CardTitle>チェックイン</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleCheckin} className="space-y-4">
-            <div className="space-y-2">
-              <Label>参加者ID または QRコード</Label>
-              <Input
-                value={participantId}
-                onChange={(e) => setParticipantId(e.target.value)}
-                placeholder="参加者IDを入力..."
-                autoFocus
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isPending || !participantId.trim()}
-            >
-              {isPending ? 'チェックイン中...' : 'チェックイン'}
-            </Button>
-          </form>
+          <Tabs defaultValue="employee_id" onValueChange={() => setInput('')}>
+            <TabsList className="w-full">
+              <TabsTrigger value="employee_id" className="flex-1">社員ID</TabsTrigger>
+              <TabsTrigger value="qrcode" className="flex-1">QRコード</TabsTrigger>
+              <TabsTrigger value="participant_id" className="flex-1">参加者ID</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="employee_id">
+              <form onSubmit={(e) => handleCheckin(e, 'employee_id')} className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Label>社員ID</Label>
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="EMP001..."
+                    autoFocus
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isPending || !input.trim()}>
+                  {isPending ? 'チェックイン中...' : 'チェックイン'}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="qrcode">
+              <form onSubmit={(e) => handleCheckin(e, 'qrcode')} className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Label>QRコード</Label>
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="QRコードをスキャン..."
+                    autoFocus
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isPending || !input.trim()}>
+                  {isPending ? 'チェックイン中...' : 'チェックイン'}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="participant_id">
+              <form onSubmit={(e) => handleCheckin(e, 'participant_id')} className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Label>参加者ID</Label>
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    autoFocus
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isPending || !input.trim()}>
+                  {isPending ? 'チェックイン中...' : 'チェックイン'}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
