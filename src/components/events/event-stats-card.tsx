@@ -12,7 +12,7 @@ export function EventStatsCard({ stats }: { stats: EventStats }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{stats.total_participants}</p>
+          <p className="text-2xl font-bold">{stats.total_participants ?? 0}</p>
         </CardContent>
       </Card>
       <Card>
@@ -22,7 +22,7 @@ export function EventStatsCard({ stats }: { stats: EventStats }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{stats.checked_in_count}</p>
+          <p className="text-2xl font-bold">{stats.checked_in_count ?? 0}</p>
         </CardContent>
       </Card>
       <Card>
@@ -32,7 +32,7 @@ export function EventStatsCard({ stats }: { stats: EventStats }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{stats.pending_count}</p>
+          <p className="text-2xl font-bold">{stats.pending_count ?? 0}</p>
         </CardContent>
       </Card>
       <Card>
@@ -42,7 +42,7 @@ export function EventStatsCard({ stats }: { stats: EventStats }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{stats.check_in_rate.toFixed(1)}%</p>
+          <p className="text-2xl font-bold">{(stats.check_in_rate ?? 0).toFixed(1)}%</p>
         </CardContent>
       </Card>
     </div>
