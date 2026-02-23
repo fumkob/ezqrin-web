@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '/api/v1';
 
 let accessToken: string | null = null;
 let refreshToken: string | null = null;
@@ -62,7 +62,12 @@ export async function apiFetch<T>(
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  } catch {
+    throw new Error('NETWORK_ERROR');
+  }
 
   if (res.status === 401 && retry) {
     const newToken = await refreshAccessToken();

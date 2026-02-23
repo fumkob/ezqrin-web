@@ -22,8 +22,19 @@ export default function LoginPage() {
     try {
       await login(email, password);
       router.push('/dashboard');
-    } catch {
-      toast.error('メールアドレスまたはパスワードが正しくありません');
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === 'NETWORK_ERROR') {
+        toast.error('APIサーバーに接続できません。サーバーが起動しているか確認してください。');
+      } else if (
+        typeof err === 'object' &&
+        err !== null &&
+        'status' in err &&
+        (err as { status: number }).status === 401
+      ) {
+        toast.error('メールアドレスまたはパスワードが正しくありません');
+      } else {
+        toast.error('ログインに失敗しました');
+      }
     } finally {
       setIsLoading(false);
     }
