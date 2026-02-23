@@ -89,3 +89,43 @@ export async function apiFetch<T>(
 
   return data as T;
 }
+
+export type OrvalRequestConfig<T = unknown> = {
+  url: string;
+  method: 'get' | 'post' | 'put' | 'patch' | 'delete' | 'head' | 'options';
+  params?: Record<string, unknown>;
+  data?: T;
+  headers?: Record<string, string>;
+  signal?: AbortSignal;
+  responseType?: string;
+};
+
+export async function orvalClient<T>(config: OrvalRequestConfig): Promise<T> {
+  const { url, method, params, data, headers, signal } = config;
+
+  const qs =
+    params && Object.keys(params).length > 0
+      ? '?' +
+        new URLSearchParams(
+          Object.fromEntries(
+            Object.entries(params)
+              .filter(([, v]) => v != null)
+              .map(([k, v]) => [k, String(v)]),
+          ),
+        ).toString()
+      : '';
+
+  const isFormData = data instanceof FormData;
+
+  return apiFetch<T>(url + qs, {
+    method: method.toUpperCase(),
+    headers,
+    body:
+      data === undefined || data === null
+        ? undefined
+        : isFormData
+          ? (data as FormData)
+          : JSON.stringify(data),
+    signal,
+  });
+}
