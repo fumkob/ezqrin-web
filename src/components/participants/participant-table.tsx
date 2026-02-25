@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trash2, CheckCircle } from 'lucide-react';
+import { Trash2, CheckCircle, ExternalLink } from 'lucide-react';
 import type { Participant } from '@/lib/generated/model';
 
 const statusLabels: Record<string, string> = {
@@ -33,6 +33,7 @@ export function ParticipantTable({ participants, onDelete }: ParticipantTablePro
           <TableHead>名前</TableHead>
           <TableHead>社員ID</TableHead>
           <TableHead>メールアドレス</TableHead>
+          <TableHead>QR配布URL</TableHead>
           <TableHead>ステータス</TableHead>
           <TableHead>チェックイン</TableHead>
           <TableHead className="w-16"></TableHead>
@@ -44,6 +45,21 @@ export function ParticipantTable({ participants, onDelete }: ParticipantTablePro
             <TableCell className="font-medium">{p.name}</TableCell>
             <TableCell className="text-muted-foreground">{p.employee_id ?? '-'}</TableCell>
             <TableCell className="text-muted-foreground">{p.email}</TableCell>
+            <TableCell>
+              {p.qr_distribution_url ? (
+                <a
+                  href={p.qr_distribution_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-primary text-sm hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  リンク
+                </a>
+              ) : (
+                <span className="text-muted-foreground text-sm">-</span>
+              )}
+            </TableCell>
             <TableCell>
               <Badge variant="secondary">{statusLabels[p.status] ?? p.status}</Badge>
             </TableCell>
