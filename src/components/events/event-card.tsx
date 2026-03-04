@@ -1,10 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Users } from 'lucide-react';
 import type { Event } from '@/lib/generated/model';
+import { useDateLocale } from '@/hooks/use-locale';
 
 const statusConfig: Record<
   string,
@@ -19,6 +21,7 @@ const statusConfig: Record<
 
 export function EventCard({ event }: { event: Event }) {
   const status = statusConfig[event.status] ?? { label: event.status, variant: 'secondary' as const };
+  const locale = useDateLocale();
 
   return (
     <Link href={`/events/${event.id}`}>
@@ -32,7 +35,7 @@ export function EventCard({ event }: { event: Event }) {
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 shrink-0" />
-            <span>{format(new Date(event.start_date), 'yyyy年M月d日(E) HH:mm', { locale: ja })}</span>
+            <span>{format(new Date(event.start_date), 'PPp', { locale })}</span>
           </div>
           {event.location && (
             <div className="flex items-center gap-2">

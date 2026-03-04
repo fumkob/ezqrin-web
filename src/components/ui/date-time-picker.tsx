@@ -1,32 +1,13 @@
 'use client';
 
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
-import { de, enGB, enUS, fr, it, ja, ko, zhCN } from 'date-fns/locale';
-import type { Locale } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-
-interface LocaleInfo {
-  locale: Locale;
-  formatStr: string;
-}
-
-function getLocaleInfo(lang: string): LocaleInfo {
-  const base = lang.toLowerCase();
-  if (base.startsWith('ja')) return { locale: ja, formatStr: 'yyyy年MM月dd日 HH:mm' };
-  if (base.startsWith('zh')) return { locale: zhCN, formatStr: 'yyyy年M月d日 HH:mm' };
-  if (base.startsWith('ko')) return { locale: ko, formatStr: 'yyyy년 M월 d일 HH:mm' };
-  if (base === 'en-us') return { locale: enUS, formatStr: 'M/d/yyyy HH:mm' };
-  if (base.startsWith('fr')) return { locale: fr, formatStr: 'dd/MM/yyyy HH:mm' };
-  if (base.startsWith('de')) return { locale: de, formatStr: 'dd.MM.yyyy HH:mm' };
-  if (base.startsWith('it')) return { locale: it, formatStr: 'dd/MM/yyyy HH:mm' };
-  if (base.startsWith('en')) return { locale: enGB, formatStr: 'dd/MM/yyyy HH:mm' };
-  return { locale: enUS, formatStr: 'M/d/yyyy HH:mm' };
-}
+import { useDateLocale } from '@/hooks/use-locale';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
 const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
@@ -55,13 +36,7 @@ export function DateTimePicker({
   const time = value ? value.slice(11, 16) : '00:00';
   const [hour, minute] = time.split(':');
 
-  // SSR-safe な navigator.language 取得
-  const lang = useSyncExternalStore(
-    () => () => {},
-    () => navigator.language,
-    () => 'en-US',
-  );
-  const localeInfo = useMemo(() => getLocaleInfo(lang), [lang]);
+  const locale = useDateLocale();
 
   const disabledDates = [
     ...(minDate ? [{ before: minDate }] : []),
@@ -95,7 +70,7 @@ export function DateTimePicker({
     const d = new Date(selectedDate);
     const [hh, mm] = time.split(':').map(Number);
     d.setHours(hh, mm, 0, 0);
-    return format(d, localeInfo.formatStr, { locale: localeInfo.locale });
+    return format(d, 'PPp', { locale });
   }
 
   return (
@@ -118,7 +93,7 @@ export function DateTimePicker({
           mode="single"
           selected={selectedDate}
           onSelect={handleDateSelect}
-          locale={localeInfo.locale}
+          locale={locale}
           disabled={disabledDates.length > 0 ? disabledDates : undefined}
           autoFocus
         />

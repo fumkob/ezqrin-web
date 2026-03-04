@@ -3,10 +3,10 @@
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { Edit, Trash2, Users, ClipboardCheck } from 'lucide-react';
 import { useEvent, useEventStats, useDeleteEvent } from '@/hooks/use-events';
+import { useDateLocale } from '@/hooks/use-locale';
 import { EventStatsCard } from '@/components/events/event-stats-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +25,7 @@ export default function EventDetailPage() {
   const { data: event, isLoading } = useEvent(id);
   const { data: stats } = useEventStats(id);
   const { mutateAsync: deleteEvent } = useDeleteEvent();
+  const locale = useDateLocale();
 
   async function handleDelete() {
     if (!confirm('このイベントを削除しますか？この操作は取り消せません。')) return;
@@ -51,9 +52,9 @@ export default function EventDetailPage() {
             <Badge variant={status.variant}>{status.label}</Badge>
           </div>
           <p className="text-muted-foreground">
-            {format(new Date(event.start_date), 'yyyy年M月d日(E) HH:mm', { locale: ja })}
+            {format(new Date(event.start_date), 'PPp', { locale })}
             {event.end_date &&
-              ` 〜 ${format(new Date(event.end_date), 'HH:mm')}`}
+              ` 〜 ${format(new Date(event.end_date), 'p', { locale })}`}
             {event.location && ` ｜ ${event.location}`}
           </p>
           {event.description && (

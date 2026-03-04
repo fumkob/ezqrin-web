@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { useCheckins, usePerformCheckin } from '@/hooks/use-checkins';
 import { useEvent } from '@/hooks/use-events';
+import { useDateLocale } from '@/hooks/use-locale';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +24,7 @@ export default function CheckinPage() {
   const { data: event } = useEvent(id);
   const { data: checkins, isLoading } = useCheckins(id);
   const { mutateAsync: performCheckin, isPending } = usePerformCheckin(id);
+  const locale = useDateLocale();
 
   async function handleCheckin(e: React.FormEvent, tab: CheckinTab) {
     e.preventDefault();
@@ -148,7 +149,7 @@ export default function CheckinPage() {
                     {ci.checkin_method === 'qrcode' ? 'QR' : '手動'}
                   </Badge>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {format(new Date(ci.checked_in_at), 'HH:mm', { locale: ja })}
+                    {format(new Date(ci.checked_in_at), 'p', { locale })}
                   </p>
                 </div>
               </div>
