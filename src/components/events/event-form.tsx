@@ -37,6 +37,25 @@ interface EventFormProps {
 }
 
 export function EventForm({ defaultValues, onSubmit, isLoading }: EventFormProps) {
+  const tz = defaultValues?.timezone ?? 'Asia/Tokyo';
+
+  function toDatetimeLocal(iso: string | undefined): string {
+    if (!iso) return '';
+    const date = new Date(iso);
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(date);
+    const get = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((p) => p.type === type)?.value ?? '';
+    return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`;
+  }
+
   const {
     register,
     handleSubmit,
@@ -48,10 +67,10 @@ export function EventForm({ defaultValues, onSubmit, isLoading }: EventFormProps
     defaultValues: {
       name: defaultValues?.name ?? '',
       description: defaultValues?.description ?? '',
-      start_date: defaultValues?.start_date?.slice(0, 16) ?? '',
-      end_date: defaultValues?.end_date?.slice(0, 16) ?? '',
+      start_date: toDatetimeLocal(defaultValues?.start_date),
+      end_date: toDatetimeLocal(defaultValues?.end_date),
       location: defaultValues?.location ?? '',
-      timezone: defaultValues?.timezone ?? 'Asia/Tokyo',
+      timezone: tz,
       status: (defaultValues?.status ?? 'draft') as FormData['status'],
     },
   });

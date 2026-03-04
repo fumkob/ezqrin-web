@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useGetEvents,
   useGetEventsId,
+  getGetEventsIdQueryKey,
   useGetEventsIdStats,
   usePostEvents,
   usePutEventsId,
@@ -62,7 +63,10 @@ export function useUpdateEvent(id: string) {
   const qc = useQueryClient();
   const mutation = usePutEventsId({
     mutation: {
-      onSuccess: () => qc.invalidateQueries({ queryKey: eventKeys.all }),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: eventKeys.all });
+        qc.invalidateQueries({ queryKey: getGetEventsIdQueryKey(id) });
+      },
     },
   });
   return {
