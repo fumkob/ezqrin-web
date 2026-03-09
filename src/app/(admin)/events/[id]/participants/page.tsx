@@ -8,6 +8,7 @@ import { Search, Upload, Download, ArrowLeft } from 'lucide-react';
 import {
   useParticipants,
   useAddParticipant,
+  useUpdateParticipant,
   useDeleteParticipant,
   useImportParticipants,
 } from '@/hooks/use-participants';
@@ -24,6 +25,7 @@ export default function ParticipantsPage() {
   const { data: event } = useEvent(id);
   const { data, isLoading } = useParticipants(id, { search: search || undefined });
   const { mutateAsync: addParticipant } = useAddParticipant(id);
+  const { mutateAsync: updateParticipant } = useUpdateParticipant(id);
   const { mutateAsync: deleteParticipant } = useDeleteParticipant(id);
   const { mutateAsync: importCSV } = useImportParticipants(id);
 
@@ -33,6 +35,14 @@ export default function ParticipantsPage() {
       toast.success('参加者を追加しました');
     } catch {
       toast.error('追加に失敗しました');
+    }
+  }
+
+  async function handleStatusChange(participantId: string, status: string) {
+    try {
+      await updateParticipant({ id: participantId, data: { status: status as Participant['status'] } });
+    } catch {
+      toast.error('ステータスの更新に失敗しました');
     }
   }
 
@@ -102,7 +112,7 @@ export default function ParticipantsPage() {
         <div className="text-muted-foreground">読み込み中...</div>
       ) : (
         <>
-          <ParticipantTable participants={(data?.data as Participant[] | undefined) ?? []} onDelete={handleDelete} />
+          <ParticipantTable participants={(data?.data as Participant[] | undefined) ?? []} onDelete={handleDelete} onStatusChange={handleStatusChange} />
           <p className="text-sm text-muted-foreground">全 {data?.meta.total ?? 0} 名</p>
         </>
       )}

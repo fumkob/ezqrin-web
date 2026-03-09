@@ -8,24 +8,32 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Trash2, CheckCircle, ExternalLink } from 'lucide-react';
 import type { Participant } from '@/lib/generated/model';
+import { ParticipantStatus } from '@/lib/generated/model';
 
 const statusLabels: Record<string, string> = {
-  tentative: '仮参加',
-  confirmed: '参加確定',
-  cancelled: 'キャンセル',
-  declined: '不参加',
+  [ParticipantStatus.tentative]: '仮参加',
+  [ParticipantStatus.confirmed]: '参加',
+  [ParticipantStatus.cancelled]: 'キャンセル',
+  [ParticipantStatus.declined]: '不参加',
 };
 
 interface ParticipantTableProps {
   participants: Participant[];
   onDelete: (id: string) => void;
+  onStatusChange: (id: string, status: string) => void;
 }
 
-export function ParticipantTable({ participants, onDelete }: ParticipantTableProps) {
+export function ParticipantTable({ participants, onDelete, onStatusChange }: ParticipantTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -61,7 +69,16 @@ export function ParticipantTable({ participants, onDelete }: ParticipantTablePro
               )}
             </TableCell>
             <TableCell>
-              <Badge variant="secondary">{statusLabels[p.status] ?? p.status}</Badge>
+              <Select value={p.status} onValueChange={(value) => onStatusChange(p.id, value)}>
+                <SelectTrigger className="w-32 h-7 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(statusLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </TableCell>
             <TableCell>
               {p.checked_in ? (
