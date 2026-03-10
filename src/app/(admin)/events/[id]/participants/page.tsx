@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Search, Upload, Download, ArrowLeft, Mail } from 'lucide-react';
+import { Search, Upload, Download, ArrowLeft, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   useParticipants,
   useAddParticipant,
@@ -19,15 +19,30 @@ import { AddParticipantDialog } from '@/components/participants/add-participant-
 import { SendQRCodesDialog } from '@/components/participants/send-qrcodes-dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { CreateParticipantRequest, Participant } from '@/lib/generated/model';
+
+const PER_PAGE_OPTIONS = [20, 50, 100];
 
 export default function ParticipantsPage() {
   const { id } = useParams<{ id: string }>();
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const { data: event } = useEvent(id);
-  const { data, isLoading } = useParticipants(id, { search: search || undefined });
+  const { data, isLoading } = useParticipants(id, {
+    search: search || undefined,
+    page,
+    per_page: perPage,
+  });
   const { mutateAsync: addParticipant } = useAddParticipant(id);
   const { mutateAsync: updateParticipant } = useUpdateParticipant(id);
   const { mutateAsync: deleteParticipant } = useDeleteParticipant(id);
@@ -107,7 +122,7 @@ export default function ParticipantsPage() {
             placeholder="名前・メールで検索..."
             className="pl-9"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
         <AddParticipantDialog onAdd={handleAdd} />
@@ -137,7 +152,50 @@ export default function ParticipantsPage() {
             onDelete={handleDelete}
             onStatusChange={handleStatusChange}
           />
-          <p className="text-sm text-muted-foreground">全 {totalCount} 名</p>
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span>表示件数:</span>
+              <Select
+                value={String(perPage)}
+                onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}
+              >
+                <SelectTrigger className="h-8 w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PER_PAGE_OPTIONS.map((n) => (
+                    <SelectItem key={n} value={String(n)}>{n}件</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span>全 {totalCount} 名</span>
+            </div>
+            {(data?.meta.total_pages ?? 1) > 1 && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="px-2">
+                  {page} / {data?.meta.total_pages ?? 1}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => Math.min(data?.meta.total_pages ?? 1, p + 1))}
+                  disabled={page >= (data?.meta.total_pages ?? 1)}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         </>
       )}
 
