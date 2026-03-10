@@ -5,7 +5,7 @@ import {
   useUpdateParticipant as useUpdateParticipantGenerated,
   useDeleteParticipant as useDeleteParticipantGenerated,
 } from '@/lib/generated/participants/participants';
-import { apiFetch } from '@/lib/api/client';
+import { apiFetch, apiFetchBlob } from '@/lib/api/client';
 import type { CreateParticipantRequest, UpdateParticipantRequest, ListParticipantsParams, ParticipantListResponse } from '@/lib/generated/model';
 
 export const participantKeys = {
@@ -58,6 +58,21 @@ export function useDeleteParticipant(eventId: string) {
     ...mutation,
     mutateAsync: (id: string) => mutation.mutateAsync({ id }),
   };
+}
+
+export function useExportParticipants(eventId: string) {
+  const exportCSV = async (filename?: string) => {
+    const blob = await apiFetchBlob(`/events/${eventId}/participants/export`);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename ?? `participants_${eventId}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  return { exportCSV };
 }
 
 export function useImportParticipants(eventId: string) {

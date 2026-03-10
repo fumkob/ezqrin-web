@@ -4,17 +4,19 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Search, Upload, Download, ArrowLeft } from 'lucide-react';
+import { Search, Upload, Download, ArrowLeft, Mail } from 'lucide-react';
 import {
   useParticipants,
   useAddParticipant,
   useUpdateParticipant,
   useDeleteParticipant,
   useImportParticipants,
+  useExportParticipants,
 } from '@/hooks/use-participants';
 import { useEvent } from '@/hooks/use-events';
 import { ParticipantTable } from '@/components/participants/participant-table';
 import { AddParticipantDialog } from '@/components/participants/add-participant-dialog';
+import { SendQRCodesDialog } from '@/components/participants/send-qrcodes-dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { CreateParticipantRequest, Participant } from '@/lib/generated/model';
@@ -22,12 +24,21 @@ import type { CreateParticipantRequest, Participant } from '@/lib/generated/mode
 export default function ParticipantsPage() {
   const { id } = useParams<{ id: string }>();
   const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const { data: event } = useEvent(id);
   const { data, isLoading } = useParticipants(id, { search: search || undefined });
   const { mutateAsync: addParticipant } = useAddParticipant(id);
   const { mutateAsync: updateParticipant } = useUpdateParticipant(id);
   const { mutateAsync: deleteParticipant } = useDeleteParticipant(id);
   const { mutateAsync: importCSV } = useImportParticipants(id);
+  const { exportCSV } = useExportParticipants(id);
+
+  const totalCount = data?.meta.total ?? 0;
+  const sendLabel =
+    selectedIds.size > 0
+      ? `QRコード送信 (選択 ${selectedIds.size} 名)`
+      : `QRコード送信 (全 ${totalCount} 名)`;
 
   async function handleAdd(req: CreateParticipantRequest) {
     try {
@@ -53,6 +64,14 @@ export default function ParticipantsPage() {
       toast.success('参加者を削除しました');
     } catch {
       toast.error('削除に失敗しました');
+    }
+  }
+
+  async function handleExport() {
+    try {
+      await exportCSV(event ? `participants_${event.name}.csv` : undefined);
+    } catch {
+      toast.error('CSVエクスポートに失敗しました');
     }
   }
 
@@ -98,13 +117,11 @@ export default function ParticipantsPage() {
             <input type="file" accept=".csv" className="hidden" onChange={handleImport} />
           </label>
         </Button>
-        <Button variant="outline" asChild>
-          <a
-            href={`${process.env.NEXT_PUBLIC_API_URL}/events/${id}/participants/export`}
-            download
-          >
-            <Download className="h-4 w-4 mr-2" />CSV エクスポート
-          </a>
+        <Button variant="outline" onClick={handleExport}>
+          <Download className="h-4 w-4 mr-2" />CSV エクスポート
+        </Button>
+        <Button variant="outline" onClick={() => setSendDialogOpen(true)} disabled={totalCount === 0}>
+          <Mail className="h-4 w-4 mr-2" />{sendLabel}
         </Button>
       </div>
 
@@ -112,10 +129,25 @@ export default function ParticipantsPage() {
         <div className="text-muted-foreground">読み込み中...</div>
       ) : (
         <>
-          <ParticipantTable participants={(data?.data as Participant[] | undefined) ?? []} onDelete={handleDelete} onStatusChange={handleStatusChange} />
-          <p className="text-sm text-muted-foreground">全 {data?.meta.total ?? 0} 名</p>
+          <ParticipantTable
+            eventId={id}
+            participants={(data?.data as Participant[] | undefined) ?? []}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            onDelete={handleDelete}
+            onStatusChange={handleStatusChange}
+          />
+          <p className="text-sm text-muted-foreground">全 {totalCount} 名</p>
         </>
       )}
+
+      <SendQRCodesDialog
+        eventId={id}
+        open={sendDialogOpen}
+        onOpenChange={setSendDialogOpen}
+        selectedIds={selectedIds}
+        totalCount={totalCount}
+      />
     </div>
   );
 }

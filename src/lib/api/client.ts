@@ -112,3 +112,38 @@ export async function apiFetch<T>(
 export async function orvalClient<T>(url: string, options?: RequestInit): Promise<any> {
   return apiFetch<T>(url, options ?? {});
 }
+
+export async function apiFetchBlob(
+  path: string,
+  options: RequestInit = {},
+  retry = true,
+): Promise<Blob> {
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  };
+
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  } catch {
+    throw new Error('NETWORK_ERROR');
+  }
+
+  if (res.status === 401 && retry) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      return apiFetchBlob(path, options, false);
+    }
+    throw new Error('UNAUTHORIZED');
+  }
+
+  if (!res.ok) {
+    throw new Error(`HTTP_ERROR_${res.status}`);
+  }
+
+  return res.blob();
+}
