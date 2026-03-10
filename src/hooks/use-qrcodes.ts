@@ -17,7 +17,7 @@ export function useSendQRCodes(eventId: string) {
           email_template: SendQRCodesRequestEmailTemplate.default,
         },
       });
-      return res.data as SendQRCodesResponse;
+      return res as unknown as SendQRCodesResponse;
     },
   };
 }
